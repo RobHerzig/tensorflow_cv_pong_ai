@@ -87,12 +87,12 @@ def find_players(image):
     image = roi(image, relevant_roi_vertices)
     #Find Players
     resPlayer = cv2.matchTemplate(image, templatePlayer, cv2.TM_CCOEFF_NORMED)
-    threshold = 0.8
+    threshold = 0.95
     locPlayers = np.where(resPlayer >= threshold)
 
     #Find Ball
     resBall = cv2.matchTemplate(image, templateBall, cv2.TM_CCOEFF_NORMED)
-    threshold = 0.92
+    threshold = 0.95
     locBall = np.where(resBall >= threshold)
     try:
         player_left_pos = tuple(x[0] for x in locPlayers)
@@ -108,17 +108,23 @@ def find_players(image):
     except:
         return ()
 
-
+full_width = 1280
+full_height = 740
 while True:
-    screen = np.array(ImageGrab.grab(bbox=(0, 40, 1280, 720)))
+    screen = np.array(ImageGrab.grab(bbox=(0, 40, full_width, full_height)))
+    #screen = cv2.resize(screen, (int(full_width/2), int(full_height/2)))
     #ret, screen = cap.read()
+
     screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
+    #cv2.imshow('BlackWhite', screen)
     positions = find_players(screen)
+
     new_screen = process_img(screen)
+
     try:
         print ("Positions" + str(positions))
-        player_left_pos = positions[0]
-        ball_pos = positions[1]
+        player_left_pos = (positions[0][1],positions[0][0])
+        ball_pos = (positions[1][1],positions[1][0])
         print("PlayerPosition " + str(player_left_pos) + " BallPosition " + str(ball_pos))
         cv2.rectangle(new_screen, player_left_pos, (player_left_pos[0] + widthPlayer, player_left_pos[1] + heightPlayer), (255, 255, 255), 1)
         cv2.rectangle(new_screen, ball_pos, (ball_pos[0] + widthBall, ball_pos[1] + heightBall), (255, 255, 255), 1)
@@ -130,6 +136,7 @@ while True:
     last_time = time.time()
 
     cv2.imshow('windowProcessed', new_screen)
+    
     # cv2.imshow('Window', cv2.cvtColor(screen,cv2.COLOR_BGR2GRAY))
     if cv2.waitKey(25) & 0xFF == ord('q'):
         cv2.destroyAllWindows()
