@@ -127,6 +127,11 @@ def find_players(image):
 
 full_width = 1280
 full_height = 740
+counter = 3
+while counter >= 0:
+    counter -= 1
+    time.sleep(1)
+    print(counter+1)
 while True:
     screen = np.array(ImageGrab.grab(bbox=(0, 40, full_width, full_height)))
     #screen = cv2.resize(screen, (int(full_width/2), int(full_height/2)))
