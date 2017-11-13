@@ -6,7 +6,7 @@ import pyautogui
 from directkeys import PressKey, ReleaseKey, W, A, S, D
 
 #vars -----------------------------------------------------
-player_left_pos = (0,0)
+player_left_pos = (0,0) #use these positions and the distance player->ball as input for NN
 player_right_pos = (0,0)
 ball_pos = (0,0)
 
@@ -37,6 +37,19 @@ def roi(img, vertices):
     cv2.fillPoly(mask, np.int32([vertices]), 255)
     masked = cv2.bitwise_and(img, mask)
     return masked
+
+#Let neural network simply output [a,b] where a/b=0 -> release/don't press W/S, a/b=1 -> don't release/press W/S
+def goUp():
+    PressKey(W)
+
+def releaseUp():
+    ReleaseKey(W)
+
+def goDown():
+    PressKey(S)
+
+def releaseDown():
+    ReleaseKey(S)
 
 #for testing controls (simply presses W and S via DirectX input)
 def stupidTest(times):
@@ -80,6 +93,10 @@ def process_img(original_image):
 
 def read_score(image):
     print("Read Score")
+
+#make NN minimize this -> should always try to hit the ball
+def get_ball_player_distance(pos1, pos2):
+    return abs(pos1[1] - pos2[1])
 
 def find_players(image):
     #cv2.imshow('test_window', image)
@@ -126,6 +143,7 @@ while True:
         player_left_pos = (positions[0][1],positions[0][0])
         ball_pos = (positions[1][1],positions[1][0])
         print("PlayerPosition " + str(player_left_pos) + " BallPosition " + str(ball_pos))
+        print("DISTANCE: " + str(get_ball_player_distance(player_left_pos, ball_pos)))
         cv2.rectangle(new_screen, player_left_pos, (player_left_pos[0] + widthPlayer, player_left_pos[1] + heightPlayer), (255, 255, 255), 1)
         cv2.rectangle(new_screen, ball_pos, (ball_pos[0] + widthBall, ball_pos[1] + heightBall), (255, 255, 255), 1)
     except:
@@ -136,7 +154,7 @@ while True:
     last_time = time.time()
 
     cv2.imshow('windowProcessed', new_screen)
-    
+
     # cv2.imshow('Window', cv2.cvtColor(screen,cv2.COLOR_BGR2GRAY))
     if cv2.waitKey(25) & 0xFF == ord('q'):
         cv2.destroyAllWindows()
